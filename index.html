@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>1980s AI Computer</title>
+<style>
+  :root{
+    --beige:#d7cdb8;
+    --beige-dark:#b8aa91;
+    --beige-light:#efe8db;
+    --shadow:#7f745f;
+    --screen:#071a0f;
+    --green:#78ff9a;
+    --green-dim:#2bc95d;
+    --line:#1f3a27;
+    --text:#d7ffe2;
+  }
+
+  *{box-sizing:border-box}
+  html,body{
+    margin:0;
+    min-height:100%;
+    font-family:"Courier New", monospace;
+    background:radial-gradient(circle at top, #4a4a4a 0%, #222 45%, #111 100%);
+    color:var(--text);
+  }
+
+  body{
+    min-height:100vh;
+    display:grid;
+    place-items:center;
+    padding:24px;
+  }
+
+  .scene{
+    width:min(1200px, 100%);
+    display:grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap:22px;
+    align-items:start;
+  }
+
+  @media (max-width: 920px){
+    .scene{grid-template-columns:1fr}
+  }
+
+  .computer{
+    background:linear-gradient(180deg, var(--beige-light), var(--beige) 18%, var(--beige-dark) 100%);
+    border:4px solid #9c8f77;
+    border-radius:28px;
+    box-shadow:0 28px 70px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,255,255,.35);
+    padding:22px;
+    position:relative;
+  }
+
+  .brand{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+    color:#6b5c43;
+    text-transform:uppercase;
+    letter-spacing:3px;
+    font-size:13px;
+    font-weight:bold;
+  }
+
+  .lamp{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .light{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 12px rgba(120,255,154,.35);
+  }
+
+  .monitor{
+    background:linear-gradient(180deg, #cdbfa7, #b7a789);
+    border:4px solid #927f64;
+    border-radius:26px;
+    padding:18px;
+    box-shadow:inset 0 0 0 2px rgba(255,255,255,.28);
+  }
+
+  .screen-shell{
+    background:#15120f;
+    border:4px solid #5d513f;
+    border-radius:18px;
+    padding:12px;
+    box-shadow: inset 0 0 18px rgba(0,0,0,.6);
+  }
+
+  .screen{
+    position:relative;
+    min-height:500px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at center, rgba(120,255,154,.10), transparent 48%),
+      linear-gradient(180deg, #031009, #071a0f 45%, #021007);
+    border:2px solid #2f5a39;
+    border-radius:12px;
+    box-shadow: inset 0 0 40px rgba(0,0,0,.45);
+  }
+
+  .screen::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:repeating-linear-gradient(180deg, rgba(255,255,255,.035) 0px, rgba(255,255,255,.035) 1px, transparent 2px, transparent 4px);
+    pointer-events:none;
+    mix-blend-mode:soft-light;
+  }
+
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    color:#bfffd0;
+    border-bottom:1px solid var(--line);
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:13px;
+    position:relative;
+    z-index:2;
+  }
+
+  .badge{
+    background:var(--green);
+    color:#06210f;
+    padding:5px 10px;
+    border-radius:999px;
+    font-weight:700;
+    box-shadow:0 0 16px rgba(120,255,154,.35);
+  }
+
+  .terminal{
+    position:relative;
+    z-index:2;
+    height:calc(500px - 49px);
+    padding:16px;
+    overflow:auto;
+    line-height:1.5;
+    font-size:16px;
+    text-shadow:0 0 8px rgba(120,255,154,.2);
+  }
+
+  .line{
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+
+  .caret{
+    display:inline-block;
+    width:10px;
+    height:18px;
+    background:var(--green);
+    margin-left:3px;
+    vertical-align:-3px;
+    animation:blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink{50%{opacity:0}}
+
+  .keyboard-area{
+    margin-top:18px;
+    background:linear-gradient(180deg, #ded4c1, #b5a78d);
+    border:4px solid #98896f;
+    border-radius:22px;
+    padding:16px;
+    box-shadow:inset 0 0 0 2px rgba(255,255,255,.25);
+  }
+
+  .inputRow{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+  }
+
+  input, button{
+    font:inherit;
+  }
+
+  input{
+    flex:1;
+    padding:12px 14px;
+    border-radius:10px;
+    border:2px solid #8c7e65;
+    background:#f4ecdd;
+    color:#2d2519;
+    outline:none;
+  }
+
+  button{
+    cursor:pointer;
+    border:none;
+    color:#514632;
+    background:linear-gradient(180deg, #f1e7d4, #cdbda2);
+    border-radius:10px;
+    padding:12px 14px;
+    box-shadow:0 4px 0 #8d7f66, 0 10px 16px rgba(0,0,0,.18);
+    transition:transform .08s ease, filter .08s ease;
+    text-transform:uppercase;
+    font-size:12px;
+    letter-spacing:1px;
+  }
+
+  button:hover{filter:brightness(1.05)}
+  button:active{
+    transform:translateY(3px);
+    box-shadow:0 1px 0 #8d7f66, 0 5px 10px rgba(0,0,0,.14);
+  }
+
+  .keys{
+    display:grid;
+    grid-template-columns:repeat(6, 1fr);
+    gap:10px;
+  }
+
+  .side{
+    display:grid;
+    gap:18px;
+  }
+
+  .panel{
+    background:linear-gradient(180deg, #e6dcc9, #c4b399);
+    border:4px solid #95866d;
+    border-radius:22px;
+    padding:18px;
+    color:#463c2b;
+    box-shadow:0 18px 50px rgba(0,0,0,.35);
+  }
+
+  .panel h1,.panel h2{
+    margin:0 0 10px 0;
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:18px;
+  }
+
+  .panel p{
+    margin:0 0 12px 0;
+    line-height:1.5;
+  }
+
+  .meter{
+    height:16px;
+    background:#9c8d72;
+    border-radius:999px;
+    overflow:hidden;
+    border:2px solid #7b6d55;
+    margin-top:10px;
+  }
+
+  .meter > div{
+    width:72%;
+    height:100%;
+    background:linear-gradient(90deg, #39d86a, #9cffb0);
+    box-shadow:0 0 12px rgba(120,255,154,.35);
+  }
+
+  .small{
+    font-size:13px;
+    opacity:.9;
+    margin-top:10px;
+  }
+</style>
+</head>
+<body>
+  <main class="scene">
+    <section class="computer">
+      <div class="brand">
+        <div>Personal Computer</div>
+        <div class="lamp"><span class="light"></span><span>Ready</span></div>
+      </div>
+
+      <div class="monitor">
+        <div class="screen-shell">
+          <div class="screen">
+            <div class="topbar">
+              <span>Retro AI System 1984</span>
+              <span class="badge" id="status">ONLINE</span>
+            </div>
+            <div class="terminal" id="terminal"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="keyboard-area">
+        <div class="keys">
+          <button onclick="sendPrompt('help')">Help</button>
+          <button onclick="sendPrompt('about')">About</button>
+          <button onclick="sendPrompt('time')">Time</button>
+          <button onclick="sendPrompt('joke')">Joke</button>
+          <button onclick="clearScreen()">Clear</button>
+          <button onclick="togglePower()">Power</button>
+        </div>
+        <div class="inputRow">
+          <input id="input" placeholder="Type a message..." autocomplete="off" />
+          <button onclick="submitPrompt()">Run</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="panel">
+        <h1>System Panel</h1>
+        <p>Your retro computer will send the message to the Vercel API route at <strong>/api/chat</strong>.</p>
+        <div class="meter"><div id="meterFill"></div></div>
+        <div class="small" id="bootText">Boot sequence stable.</div>
+      </div>
+
+      <div class="panel">
+        <h2>Commands</h2>
+        <p><strong>help</strong>, <strong>about</strong>, <strong>time</strong>, <strong>joke</strong>, <strong>clear</strong>, <strong>power</strong></p>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const terminal = document.getElementById('terminal');
+    const input = document.getElementById('input');
+    const status = document.getElementById('status');
+    const meterFill = document.getElementById('meterFill');
+    const bootText = document.getElementById('bootText');
+    let powerOn = true;
+    const lines = [];
+
+    function render(){
+      terminal.innerHTML =
+        lines.map(t => `<div class="line">${t}</div>`).join('') +
+        (powerOn ? '<div class="line">&gt; <span class="caret"></span></div>' : '');
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function add(text){
+      lines.push(text);
+      if(lines.length > 24) lines.shift();
+      render();
+    }
+
+    function clearScreen(){
+      lines.length = 0;
+      render();
+    }
+
+    function togglePower(){
+      powerOn = !powerOn;
+      status.textContent = powerOn ? 'ONLINE' : 'OFFLINE';
+      meterFill.style.width = powerOn ? '72%' : '10%';
+      bootText.textContent = powerOn ? 'Boot sequence stable.' : 'System powered down.';
+      if(powerOn){
+        add('Power restored. Welcome back.');
+      }else{
+        terminal.innerHTML = '<div class="line">SYSTEM OFFLINE</div>';
+      }
+    }
+
+    async function askAI(message){
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: message })
+      });
+
+      if(!res.ok){
+        const text = await res.text();
+        throw new Error(text || 'Request failed');
+      }
+
+      const data = await res.json();
+      return data.reply || 'No reply returned.';
+    }
+
+    async function sendPrompt(value){
+      if(!powerOn){
+        add('System is offline. Press Power.');
+        return;
+      }
+
+      const c = (value || '').trim() || input.value.trim();
+      if(!c) return;
+
+      add(`> ${c}`);
+      input.value = '';
+
+      if(c.toLowerCase() === 'clear'){
+        clearScreen();
+        return;
+      }
+
+      if(c.toLowerCase() === 'power'){
+        togglePower();
+        return;
+      }
+
+      try{
+        const reply = await askAI(c);
+        add(reply);
+      }catch(err){
+        add('AI error: ' + err.message);
+      }
+    }
+
+    function submitPrompt(){
+      sendPrompt(input.value);
+    }
+
+    input.addEventListener('keydown', e => {
+      if(e.key === 'Enter') submitPrompt();
+    });
+
+    ['Retro Systems Inc. 1984', 'Memory check... OK', 'Floppy drive A: ready', 'Loading terminal shell... OK', 'Type help to begin.']
+      .forEach((line, i) => setTimeout(() => { if(powerOn) add(line); }, i * 500));
+
+    render();
+  </script>
+</body>
+</html>
