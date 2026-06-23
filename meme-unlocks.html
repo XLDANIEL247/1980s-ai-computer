@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Unlocks - Click to Discover</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .meme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .meme-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meme-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+        }
+
+        .meme-card.unlocked {
+            background: #f8f9fa;
+        }
+
+        .lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .meme-card.unlocked .lock-overlay {
+            background: rgba(0,0,0,0);
+            pointer-events: none;
+        }
+
+        .lock-icon {
+            font-size: 48px;
+            color: white;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .meme-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .meme-card.unlocked .meme-content {
+            opacity: 1;
+        }
+
+        .meme-image {
+            max-width: 100%;
+            max-height: 180px;
+            object-fit: contain;
+        }
+
+        .meme-text {
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .meme-title {
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            font-size: 0.95em;
+        }
+
+        .meme-card.unlocked .meme-title {
+            border-top: none;
+        }
+
+        .stats {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+
+        .reset-btn {
+            display: block;
+            margin: 30px auto 0;
+            padding: 12px 30px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .reset-btn:active {
+            transform: translateY(0);
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            margin-top: 40px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .meme-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔓 Meme Unlocks</h1>
+        <p class="subtitle">Click any card to unlock hidden memes</p>
+        
+        <div class="meme-grid" id="memeGrid"></div>
+        
+        <div class="stats">
+            <span id="unlockedCount">0</span> / <span id="totalCount">0</span> memes unlocked
+        </div>
+        
+        <button class="reset-btn" onclick="resetAll()">Reset All</button>
+        
+        <div class="footer">
+            <p>Made like neal.fun • Keep clicking to discover all memes!</p>
+        </div>
+    </div>
+
+    <script>
+        const memes = [
+            {
+                title: "Plot Twist",
+                content: "🤯",
+                type: "emoji"
+            },
+            {
+                title: "Big Brain",
+                content: "🧠💡",
+                type: "emoji"
+            },
+            {
+                title: "Vibing",
+                content: "😎✌️",
+                type: "emoji"
+            },
+            {
+                title: "Pain",
+                content: "😭💀",
+                type: "emoji"
+            },
+            {
+                title: "Confused",
+                content: "🤔❓",
+                type: "emoji"
+            },
+            {
+                title: "Rage",
+                content: "😤🔥",
+                type: "emoji"
+            },
+            {
+                title: "Based",
+                content: "💪😤",
+                type: "emoji"
+            },
+            {
+                title: "Copium",
+                content: "😌💨",
+                type: "emoji"
+            },
+            {
+                title: "No Way",
+                content: "😱🙅",
+                type: "emoji"
+            },
+            {
+                title: "Sigma",
+                content: "👑😎",
+                type: "emoji"
+            },
+            {
+                title: "L Taken",
+                content: "📉😅",
+                type: "emoji"
+            },
+            {
+                title: "W Energy",
+                content: "📈🎉",
+                type: "emoji"
+            }
+        ];
+
+        function initializeMemes() {
+            const grid = document.getElementById('memeGrid');
+            grid.innerHTML = '';
+            
+            memes.forEach((meme, index) => {
+                const card = document.createElement('div');
+                card.className = 'meme-card';
+                card.dataset.index = index;
+                
+                // Check if already unlocked
+                if (localStorage.getItem(`meme-${index}`) === 'unlocked') {
+                    card.classList.add('unlocked');
+                }
+                
+                card.innerHTML = `
+                    <div class="meme-content">
+                        <div class="meme-text">${meme.content}</div>
+                    </div>
+                    <div class="lock-overlay">
+                        <div class="lock-icon">🔒</div>
+                    </div>
+                    <div class="meme-title">${meme.title}</div>
+                `;
+                
+                card.addEventListener('click', () => unlockMeme(index, card));
+                grid.appendChild(card);
+            });
+            
+            document.getElementById('totalCount').textContent = memes.length;
+            updateUnlockedCount();
+        }
+
+        function unlockMeme(index, card) {
+            if (!card.classList.contains('unlocked')) {
+                card.classList.add('unlocked');
+                localStorage.setItem(`meme-${index}`, 'unlocked');
+                updateUnlockedCount();
+                
+                // Add a little celebration
+                createConfetti(card);
+            }
+        }
+
+        function updateUnlockedCount() {
+            let count = 0;
+            for (let i = 0; i < memes.length; i++) {
+                if (localStorage.getItem(`meme-${i}`) === 'unlocked') {
+                    count++;
+                }
+            }
+            document.getElementById('unlockedCount').textContent = count;
+        }
+
+        function resetAll() {
+            if (confirm('Are you sure? This will lock all memes again.')) {
+                for (let i = 0; i < memes.length; i++) {
+                    localStorage.removeItem(`meme-${i}`);
+                }
+                initializeMemes();
+            }
+        }
+
+        function createConfetti(element) {
+            const rect = element.getBoundingClientRect();
+            for (let i = 0; i < 8; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.left = (rect.left + rect.width / 2) + 'px';
+                confetti.style.top = (rect.top + rect.height / 2) + 'px';
+                confetti.style.fontSize = '24px';
+                confetti.textContent = ['🎉', '✨', '⭐', '🌟', '💫', '🎊'][Math.floor(Math.random() * 6)];
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '1000';
+                confetti.style.animation = `fall ${2 + Math.random()}s linear forwards`;
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 2000);
+            }
+        }
+
+        // Add confetti animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(${window.innerHeight}px) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize on page load
+        window.addEventListener('load', initializeMemes);
+    </script>
+</body>
+</html>
