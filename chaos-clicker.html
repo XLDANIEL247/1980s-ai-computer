@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chaos Clicker</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --panel: #121212;
+      --text: #f4f4f4;
+      --muted: #8f97a6;
+      --accent: #ff4d6d;
+      --accent2: #00f5d4;
+      --accent3: #ffd166;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255,77,109,0.16), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(0,245,212,0.14), transparent 24%),
+        var(--bg);
+      padding: 20px;
+    }
+
+    .wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+    }
+
+    .panel {
+      background: rgba(18, 18, 18, 0.95);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+      backdrop-filter: blur(10px);
+    }
+
+    h1, h2 { margin: 0 0 8px; }
+    .subtle { color: var(--muted); margin-bottom: 14px; }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 12px;
+      color: #f5f5f5;
+    }
+
+    .meter {
+      height: 10px;
+      margin: 10px 0 14px;
+      border-radius: 999px;
+      background: #222;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .meter > div {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+      transition: width 0.2s ease;
+    }
+
+    #clickButton {
+      width: min(320px, 100%);
+      height: 320px;
+      display: block;
+      margin: 10px auto 14px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      color: #101010;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #ffe66d, #ff4d6d, #6a5cff);
+      box-shadow: 0 16px 44px rgba(0,0,0,0.42);
+    }
+
+    #clickButton:active { transform: scale(0.96); }
+
+    #eventBanner {
+      min-height: 24px;
+      color: var(--accent2);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .upgrade {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.08);
+    }
+
+    .upgrade:last-child { border-bottom: none; }
+
+    .buy {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 10px;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .buy:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .feed {
+      max-height: 760px;
+      overflow: auto;
+      padding-right: 6px;
+    }
+
+    .feed-line {
+      font-size: 11px;
+      padding: 4px 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.05);
+      color: #e6f6ff;
+      line-height: 1.35;
+    }
+
+    .feed-line:last-child { border-bottom: none; }
+
+    @media (max-width: 1100px) {
+      .wrap { grid-template-columns: 1fr; }
+      .feed { max-height: 400px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <h1>CHAOS CLICKER</h1>
+      <div class="subtle">Neal.fun but the internet got a panic attack.</div>
+
+      <div class="stats">
+        <div class="pill" id="points">Points: 0</div>
+        <div class="pill" id="auto">Auto: 0/s</div>
+        <div class="pill" id="chaos">Chaos: 0</div>
+      </div>
+
+      <div id="statusLine">Click power 1 • Auto 0/s • Regret 0 • Weirdness 0%</div>
+      <div class="meter"><div id="panicBar"></div></div>
+
+      <button id="clickButton">CLICK THE VOID</button>
+      <div id="eventBanner">Nothing happened. Yet.</div>
+
+      <h2>Upgrades</h2>
+      <div id="upgrades"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Chaos Feed</h2>
+      <div class="feed" id="feed"></div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      points: 0,
+      clickPower: 1,
+      auto: 0,
+      chaos: 0,
+      regret: 0,
+      weirdness: 0,
+      panic: 0,
+      upgradeLevels: {}
+    };
+
+    const upgrades = [
+      { id: 'meme', name: 'Meme Button', desc: 'Doubles click power.', cost: 15, effect: s => s.clickPower *= 2 },
+      { id: 'doom', name: 'Doomscroll', desc: '+0.5 auto clicks/sec.', cost: 35, effect: s => s.auto += 0.5 },
+      { id: 'coffee', name: 'Coffee of Regret', desc: '+1 auto clicks/sec.', cost: 70, effect: s => s.auto += 1 },
+      { id: 'spiral', name: 'Spiral Engine', desc: '+3 chaos per click.', cost: 95, effect: s => s.chaos += 3 },
+      { id: 'notif', name: 'Notification Storm', desc: '+2 auto clicks/sec.', cost: 120, effect: s => s.auto += 2 },
+      { id: 'cursor', name: 'Glitchy Cursor', desc: '+5 click power.', cost: 160, effect: s => s.clickPower += 5 },
+      { id: 'bed', name: 'Bedroom Organizer', desc: '+1 regret per second.', cost: 220, effect: s => s.regret += 1 },
+      { id: 'cat', name: 'Cat in the Keyboard', desc: '+10% weirdness.', cost: 280, effect: s => s.weirdness += 10 },
+      { id: 'laptop', name: 'Laptop on Fire', desc: '+3 auto clicks/sec.', cost: 330, effect: s => s.auto += 3 },
+      { id: 'shrine', name: 'Tiny Shrine', desc: '+20% click power.', cost: 500, effect: s => s.clickPower *= 1.2 },
+      { id: 'void', name: 'Void Subscription', desc: '+7 chaos and +1 panic.', cost: 650, effect: s => { s.chaos += 7; s.panic += 1; } }
+    ];
+
+    function format(n) {
+      const v = n.toFixed(1);
+      return v.endsWith('.0') ? v.slice(0, -2) : v;
+    }
+
+    function updateUI() {
+      document.getElementById('points').textContent = `Points: ${format(state.points)}`;
+      document.getElementById('auto').textContent = `Auto: ${format(state.auto)}/s`;
+      document.getElementById('chaos').textContent = `Chaos: ${format(state.chaos)}`;
+      document.getElementById('statusLine').textContent = `Click power ${format(state.clickPower)} • Auto ${format(state.auto)}/s • Regret ${format(state.regret)} • Weirdness ${format(state.weirdness)}%`;
+      document.getElementById('panicBar').style.width = `${Math.min(100, state.panic)}%`;
+      document.getElementById('clickButton').textContent = `CLICK THE VOID\n+${format(state.clickPower)}`;
+      renderUpgrades();
+    }
+
+    function logLine(text) {
+      const feed = document.getElementById('feed');
+      const line = document.createElement('div');
+      line.className = 'feed-line';
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+      feed.prepend(line);
+      while (feed.children.length > 120) feed.removeChild(feed.lastChild);
+    }
+
+    function renderUpgrades() {
+      const box = document.getElementById('upgrades');
+      box.innerHTML = upgrades.map((u, i) => {
+        const level = state.upgradeLevels[u.id] || 0;
+        const affordable = state.points >= u.cost;
+        return `
+          <div class="upgrade">
+            <div>
+              <strong>${u.name}</strong>
+              <div style="color:#8f97a6;font-size:12px;">${u.desc}</div>
+            </div>
+            <button class="buy" data-index="${i}" ${affordable ? '' : 'disabled'}>Buy ${u.cost}</button>
+          </div>
+        `;
+      }).join('');
+
+      box.querySelectorAll('.buy').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.index);
+          const u = upgrades[idx];
+          if (state.points < u.cost) return;
+          state.points -= u.cost;
+          state.upgradeLevels[u.id] = (state.upgradeLevels[u.id] || 0) + 1;
+          u.effect(state);
+          updateUI();
+          logLine(`Purchased ${u.name} for ${u.cost}.`);
+        });
+      });
+    }
+
+    document.getElementById('clickButton').addEventListener('click', () => {
+      state.points += state.clickPower;
+      state.chaos += 0.3 + Math.random() * 0.8;
+      state.panic = Math.min(100, state.panic + 1.2);
+      updateUI();
+      logLine(`You clicked and gained ${format(state.clickPower)} points.`);
+    });
+
+    function spawnEvent() {
+      const r = Math.random();
+      if (r < 0.2) {
+        state.points += 6;
+        document.getElementById('eventBanner').textContent = 'A popup appeared and gifted you six points.';
+        logLine('A popup appeared and gifted you six points.');
+      } else if (r < 0.4) {
+        state.auto += 0.4;
+        document.getElementById('eventBanner').textContent = 'Your computer got a little more haunted.';
+        logLine('Your computer got a little more haunted.');
+      } else if (r < 0.6) {
+        state.weirdness += 2;
+        document.getElementById('eventBanner').textContent = 'The UI became a little more philosophical.';
+        logLine('The UI became a little more philosophical.');
+      } else if (r < 0.8) {
+        state.chaos += 4;
+        document.getElementById('eventBanner').textContent = 'A cursed loading bar started moving.';
+        logLine('A cursed loading bar started moving.');
+      } else {
+        state.regret += 1;
+        document.getElementById('eventBanner').textContent = 'You remembered an embarrassing thing from 2017.';
+        logLine('You remembered an embarrassing thing from 2017.');
+      }
+      updateUI();
+    }
+
+    function tick() {
+      state.points += state.auto / 10;
+      state.chaos += (state.regret / 100) + (state.weirdness / 1000);
+      state.panic = Math.min(100, state.panic + (state.auto > 0 ? 0.01 : 0));
+      updateUI();
+    }
+
+    const feed = document.getElementById('feed');
+    for (let i = 0; i < 120; i++) {
+      const line = document.createElement('div');
+      line.className = 'feed-line';
+      line.textContent = `#${i + 1} ${['Meme','Doom','Coffee','Cat','Panic','Spiral','Cursor','Void','Toast','Glitch'][i % 10]} ${['levitates','screams','fizzles','reboots','rotates','glows','stutters','murmurs','overflows','teleports'][i % 10]} at ${i + 1}.`;
+      feed.appendChild(line);
+    }
+
+    updateUI();
+    setInterval(tick, 100);
+    setInterval(spawnEvent, 2800);
+  </script>
+</body>
+</html>
